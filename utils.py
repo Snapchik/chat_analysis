@@ -180,7 +180,7 @@ def extract_features(text, freqs):
 def extract_features_t(text, freqs):
     '''
     Input:
-        tweet: a list of words for one tweet
+        text: a list of words for one text
         freqs: a dictionary corresponding to the frequencies of each tuple (word, label)
     Output:
         x: a feature vector of dimension (1,3)
@@ -226,30 +226,6 @@ def predict_text(text, freqs, theta):
 
     return y_pred
 
-def count_texts(result, texts, ys):
-    '''
-    Input:
-        result: a dictionary that will be used to map each pair to its frequency
-        tweets: a list of tweets
-        ys: a list corresponding to the sentiment of each tweet (either 0 or 1)
-    Output:
-        result: a dictionary mapping each pair to its frequency
-    '''
-    for y,text in zip(ys, texts):
-        for word in process_text(text):
-            # define the key, which is the word and label tuple
-            pair = tuple(([word, y]))
-            
-            # if the key exists in the dictionary, increment the count
-            if pair in result:
-                result[pair] += 1
-
-            # else, if the key is new, add it to the dictionary and set the count to 1
-            else:
-                result[pair] = 1
-
-    return result
-
 def test_logistic_regression(test_x, test_y, freqs, theta, predict_text=predict_text):
     """
     Input: 
@@ -284,18 +260,16 @@ def test_logistic_regression(test_x, test_y, freqs, theta, predict_text=predict_
     return accuracy
 
 
-# UNQ_C1 GRADED FUNCTION: count_tweets
-
 def count_texts(result, texts, ys):
     '''
     Input:
         result: a dictionary that will be used to map each pair to its frequency
-        tweets: a list of tweets
+        texts: a list of text
         ys: a list corresponding to the sentiment of each tweet (either 0 or 1)
     Output:
         result: a dictionary mapping each pair to its frequency
     '''
-    for y, text in zip(ys, texts):
+    for y,text in zip(ys, texts):
         for word in process_text(text):
             # define the key, which is the word and label tuple
             pair = tuple(([word, y]))
@@ -311,13 +285,12 @@ def count_texts(result, texts, ys):
     return result
 
 
-
 def train_naive_bayes(freqs, train_x, train_y):
     '''
     Input:
         freqs: dictionary from (word, label) to how often the word appears
-        train_x: a list of tweets
-        train_y: a list of labels correponding to the tweets (0,1)
+        train_x: a list of texts
+        train_y: a list of labels correponding to the texts (0,1)
     Output:
         logprior: the log prior. (equation 3 above)
         loglikelihood: the log likelihood of you Naive bayes equation. (equation 6 above)
@@ -374,8 +347,6 @@ def train_naive_bayes(freqs, train_x, train_y):
     return logprior, loglikelihood
 
 
-# UNQ_C4 GRADED FUNCTION: naive_bayes_predict
-
 def naive_bayes_predict(text, logprior, loglikelihood):
     '''
     Input:
@@ -401,7 +372,6 @@ def naive_bayes_predict(text, logprior, loglikelihood):
         if word in loglikelihood:
             # add the log likelihood of that word to the probability
             p += loglikelihood[word]
-
 
     return p
 
@@ -440,7 +410,6 @@ def test_naive_bayes(test_x, test_y, logprior, loglikelihood, naive_bayes_predic
 
 
     return accuracy
-
 
 
 def lookup(freqs, word, label):
