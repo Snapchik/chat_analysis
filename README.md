@@ -8,3 +8,5 @@ My mission to be as precise and unbiased as I can be.
 
 
 What would be ideal is to use an question answering too, where transformer will take all the information from the chat and can answer questions like "concerning this topic and this time what was happening?"
+
+make a tool that automates messages sniffing and labeling them.
