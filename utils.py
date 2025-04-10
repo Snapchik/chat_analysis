@@ -40,11 +40,11 @@ def extract_text(row):
   return lst
 
 def process_text(text):
-    """Process tweet function.
+    """Process text function.
     Input:
-        text: a string containing a tweet
+        text: a string containing a text
     Output:
-        texts_clean: a list of words containing the processed tweet
+        texts_clean: a list of words containing the processed text
 
     """
     #Adding stopwords and stemmer a separate cell for reusability
@@ -56,7 +56,6 @@ def process_text(text):
     for word in text_tokens:
         if (word not in stopwords_english and  # remove stopwords
                 word not in string.punctuation):  # remove punctuation
-            # tweets_clean.append(word)
             stem_word = stemmer.stem(word)  # stemming word
             texts_clean.append(stem_word)
 
@@ -69,7 +68,7 @@ def build_freqs(text_list, ys):
     """Build frequencies.
     Input:
         text_list: a list of texts
-        ys: an m x 1 array with the sentiment label of each tweet
+        ys: an m x 1 array with the sentiment label of each text
             (either 0 or 1)
     Output:
         freqs: a dictionary mapping each (word, sentiment) pair to its
@@ -80,8 +79,8 @@ def build_freqs(text_list, ys):
     # Also note that this is just a NOP if ys is already a list.
     yslist = np.squeeze(ys).tolist()
 
-    # Start with an empty dictionary and populate it by looping over all tweets
-    # and over all processed words in each tweet.
+    # Start with an empty dictionary and populate it by looping over all texts
+    # and over all processed words in each text.
     freqs = {}
     for y, text in zip(yslist, text_list):
         for word in process_text(text):
@@ -122,14 +121,13 @@ def gradientDescent(x, y, theta, alpha, num_iters):
     Output:
         J: the final cost
         theta: your final weight vector
-    Hint: you might want to print the cost to make sure that it is going down.
+        J_history: list of costs over iterations
     '''
-
-    # get 'm', the number of rows in matrix x
     m = x.shape[0]
+    eps = 1e-10
+    J_history = []  # Initialize a list to store the cost at each iteration
 
-    for i in range(0, num_iters):
-
+    for i in range(num_iters):
         # get z, the dot product of x and theta
         z = np.dot(x, theta)
 
@@ -137,14 +135,16 @@ def gradientDescent(x, y, theta, alpha, num_iters):
         h = sigmoid(z)
 
         # calculate the cost function
-        J = - (1/m) * (np.dot(y.T, np.log(h)) + np.dot((1 - y.T), np.log(1 - h)))
+        J = - (1/m) * (np.dot(y.T, np.log(h + eps)) + np.dot((1 - y.T), np.log(1 - h + eps)))
+
+        # Save the cost J in every iteration
+        J_history.append(float(J))
 
         # update the weights theta
         theta = theta - (alpha/m) * np.dot(x.T, (h - y))
 
-
     J = float(J)
-    return J, theta
+    return J, theta, J_history
 
 
 def extract_features(text, freqs):
@@ -155,7 +155,7 @@ def extract_features(text, freqs):
     Output:
         x: a feature vector of dimension (1,3)
     '''
-    # process_tweet tokenizes, stems, and removes stopwords
+    # process_text tokenizes, stems, and removes stopwords
     word_l = process_text(text)
 
     # 3 elements in the form of a 1 x 3 vector
@@ -185,7 +185,7 @@ def extract_features_t(text, freqs):
     Output:
         x: a feature vector of dimension (1,3)
     '''
-    # process_tweet tokenizes, stems, and removes stopwords
+    # process_text tokenizes, stems, and removes stopwords
     word_l = process_text(text)
 
 
@@ -218,7 +218,7 @@ def predict_text(text, freqs, theta):
         y_pred: the probability of a text being hamass or idf
     '''
 
-    # extract the features of the tweet and store it into x
+    # extract the features of the text and store it into x
     x = extract_features(text, freqs)
 
     # make the prediction using x and theta
@@ -229,12 +229,12 @@ def predict_text(text, freqs, theta):
 def test_logistic_regression(test_x, test_y, freqs, theta, predict_text=predict_text):
     """
     Input: 
-        test_x: a list of tweets
-        test_y: (m, 1) vector with the corresponding labels for the list of tweets
+        test_x: a list of texts
+        test_y: (m, 1) vector with the corresponding labels for the list of texts
         freqs: a dictionary with the frequency of each pair (or tuple)
         theta: weight vector of dimension (3, 1)
     Output: 
-        accuracy: (# of tweets classified correctly) / (total # of tweets)
+        accuracy: (# of texts classified correctly) / (total # of texts)
     """
     
     
@@ -242,7 +242,7 @@ def test_logistic_regression(test_x, test_y, freqs, theta, predict_text=predict_
     y_hat = []
     
     for text in test_x:
-        # get the label prediction for the tweet
+        # get the label prediction for the text
         y_pred = predict_text(text, freqs, theta)
         
         if y_pred > 0.5:
@@ -265,7 +265,7 @@ def count_texts(result, texts, ys):
     Input:
         result: a dictionary that will be used to map each pair to its frequency
         texts: a list of text
-        ys: a list corresponding to the sentiment of each tweet (either 0 or 1)
+        ys: a list corresponding to the sentiment of each text (either 0 or 1)
     Output:
         result: a dictionary mapping each pair to its frequency
     '''
@@ -350,14 +350,14 @@ def train_naive_bayes(freqs, train_x, train_y):
 def naive_bayes_predict(text, logprior, loglikelihood):
     '''
     Input:
-        tweet: a string
+        text: a string
         logprior: a number
         loglikelihood: a dictionary of words mapping to numbers
     Output:
-        p: the sum of all the logliklihoods of each word in the tweet (if found in the dictionary) + logprior (a number)
+        p: the sum of all the logliklihoods of each word in the text (if found in the dictionary) + logprior (a number)
 
     '''
-    # process the tweet to get a list of words
+    # process the text to get a list of words
     word_l = process_text(text)
 
     # initialize probability to zero
@@ -380,12 +380,12 @@ def naive_bayes_predict(text, logprior, loglikelihood):
 def test_naive_bayes(test_x, test_y, logprior, loglikelihood, naive_bayes_predict=naive_bayes_predict):
     """
     Input:
-        test_x: A list of tweets
-        test_y: the corresponding labels for the list of tweets
+        test_x: A list of texts
+        test_y: the corresponding labels for the list of texts
         logprior: the logprior
         loglikelihood: a dictionary with the loglikelihoods for each word
     Output:
-        accuracy: (# of tweets classified correctly)/(total # of tweets)
+        accuracy: (# of texts classified correctly)/(total # of texts)
     """
     accuracy = 0  # return this properly
 
